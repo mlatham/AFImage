@@ -145,7 +145,7 @@ static inline NSURL *mainBundleURLForFile(NSString *file)
         if ([_fileManager removeItemAtURL: targetURL 
             error: &error] == NO)
         {
-            AFLog(@"Failed to delete file at '@' before overwiting: %@",
+            AFLog(@"Failed to delete file at '%@' before overwiting: %@",
                 targetURL, [error localizedDescription]);
             return NO;
         }
