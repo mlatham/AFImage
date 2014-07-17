@@ -14,6 +14,8 @@ Pod::Spec.new do |s|
   s.source_files		= 'AFImage/Pod/**/*.{h,m}'
   s.public_header_files = 'AFImage/Pod/**/*.h'
 
+  s.prefix_header_contents = '#import "AFImage-Includes.h"'
+
   s.platform			= :ios, "6.0"
   s.requires_arc		= true
 
