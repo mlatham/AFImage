@@ -23,7 +23,6 @@
 		C9A7C18819786CA200C367AC /* AFAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17519786CA200C367AC /* AFAppDelegate.m */; };
 		C9A7C18919786CA200C367AC /* AFViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17719786CA200C367AC /* AFViewController.m */; };
 		C9A7C18A19786CA200C367AC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9A7C17819786CA200C367AC /* Images.xcassets */; };
-		C9A7C18B19786CA200C367AC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17919786CA200C367AC /* main.m */; };
 		C9A7C18C19786CA200C367AC /* AFImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17D19786CA200C367AC /* AFImageCache.m */; };
 		C9A7C18D19786CA200C367AC /* AFImageCacheOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17F19786CA200C367AC /* AFImageCacheOperation.m */; };
 		C9A7C18E19786CA200C367AC /* AFImageTransform.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C18119786CA200C367AC /* AFImageTransform.m */; };
@@ -31,6 +30,7 @@
 		C9A7C19019786CA200C367AC /* AFImage-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C9A7C18519786CA200C367AC /* AFImage-Info.plist */; };
 		C9A7C19119786CA200C367AC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C9A7C18719786CA200C367AC /* InfoPlist.strings */; };
 		C9A7C19719786F3600C367AC /* AFFileHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C19619786F3600C367AC /* AFFileHelper.m */; };
+		C9A7C22B197873A900C367AC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C22A197873A900C367AC /* main.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +65,6 @@
 		C9A7C17619786CA200C367AC /* AFViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFViewController.h; sourceTree = "<group>"; };
 		C9A7C17719786CA200C367AC /* AFViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFViewController.m; sourceTree = "<group>"; };
 		C9A7C17819786CA200C367AC /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		C9A7C17919786CA200C367AC /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9A7C17B19786CA200C367AC /* AFCornerRadiuses.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFCornerRadiuses.h; sourceTree = "<group>"; };
 		C9A7C17C19786CA200C367AC /* AFImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFImageCache.h; sourceTree = "<group>"; };
 		C9A7C17D19786CA200C367AC /* AFImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFImageCache.m; sourceTree = "<group>"; };
@@ -81,6 +80,7 @@
 		C9A7C19519786F3600C367AC /* AFFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFFileHelper.h; sourceTree = "<group>"; };
 		C9A7C19619786F3600C367AC /* AFFileHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFFileHelper.m; sourceTree = "<group>"; };
 		C9A7C19A1978705B00C367AC /* AFImage-Includes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AFImage-Includes.h"; sourceTree = "<group>"; };
+		C9A7C22A197873A900C367AC /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		F5D266891B21441DAF3413C9 /* libPods-Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -192,7 +192,6 @@
 				C9A7C17519786CA200C367AC /* AFAppDelegate.m */,
 				C9A7C17619786CA200C367AC /* AFViewController.h */,
 				C9A7C17719786CA200C367AC /* AFViewController.m */,
-				C9A7C17919786CA200C367AC /* main.m */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -222,6 +221,7 @@
 				C9A7C18519786CA200C367AC /* AFImage-Info.plist */,
 				C9A7C18619786CA200C367AC /* AFImage-Prefix.pch */,
 				C9A7C18719786CA200C367AC /* InfoPlist.strings */,
+				C9A7C22A197873A900C367AC /* main.m */,
 			);
 			path = "Supporting Files";
 			sourceTree = "<group>";
@@ -397,10 +397,10 @@
 				C9A7C19719786F3600C367AC /* AFFileHelper.m in Sources */,
 				C9A7C18F19786CA200C367AC /* AFImageView.m in Sources */,
 				C9A7C18819786CA200C367AC /* AFAppDelegate.m in Sources */,
-				C9A7C18B19786CA200C367AC /* main.m in Sources */,
 				C9A7C18919786CA200C367AC /* AFViewController.m in Sources */,
 				C9A7C18D19786CA200C367AC /* AFImageCacheOperation.m in Sources */,
 				C9A7C18C19786CA200C367AC /* AFImageCache.m in Sources */,
+				C9A7C22B197873A900C367AC /* main.m in Sources */,
 				C9A7C18E19786CA200C367AC /* AFImageTransform.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
