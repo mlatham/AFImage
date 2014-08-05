@@ -261,8 +261,8 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 				UIImage *image = nil;
 				
 				if (_result == AFImageCacheResultFailed
-					|| _imageData != nil
-					|| [_imageData length] == 0)
+					|| (_imageData != nil
+					&& [_imageData length] == 0))
 				{
 					// Returns nil if the cache data doesn't exist.
 					_imageData = [self _readCacheImageData];
