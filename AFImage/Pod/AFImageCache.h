@@ -21,7 +21,7 @@ typedef AFImageCacheOperation *(^AFImageCacheOperationCreateBlock)(NSURL *url, A
 
 #pragma mark - Static Methods
 
-+ (id)sharedInstance;
++ (instancetype)sharedInstance;
 
 
 #pragma mark - Instance Methods
