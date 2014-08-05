@@ -31,6 +31,7 @@ typedef void (^AFImageCacheURLCompletion)(AFImageCacheResult result, NSURL *imag
 @property (nonatomic, readonly) NSURL *url;
 
 @property (nonatomic, readonly) NSMutableURLRequest *request;
+@property (nonatomic, readonly) NSHTTPURLResponse *response;
 
 
 #pragma mark - Constructors
