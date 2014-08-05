@@ -27,7 +27,6 @@
 		C9A7C18D19786CA200C367AC /* AFImageCacheOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C17F19786CA200C367AC /* AFImageCacheOperation.m */; };
 		C9A7C18E19786CA200C367AC /* AFImageTransform.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C18119786CA200C367AC /* AFImageTransform.m */; };
 		C9A7C18F19786CA200C367AC /* AFImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C18319786CA200C367AC /* AFImageView.m */; };
-		C9A7C19019786CA200C367AC /* AFImage-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C9A7C18519786CA200C367AC /* AFImage-Info.plist */; };
 		C9A7C19119786CA200C367AC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C9A7C18719786CA200C367AC /* InfoPlist.strings */; };
 		C9A7C19719786F3600C367AC /* AFFileHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C19619786F3600C367AC /* AFFileHelper.m */; };
 		C9A7C22B197873A900C367AC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A7C22A197873A900C367AC /* main.m */; };
@@ -307,7 +306,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9A7C19019786CA200C367AC /* AFImage-Info.plist in Resources */,
 				C9A7C19119786CA200C367AC /* InfoPlist.strings in Resources */,
 				C9A7C1711978681800C367AC /* LICENSE in Resources */,
 				C9A7C18A19786CA200C367AC /* Images.xcassets in Resources */,

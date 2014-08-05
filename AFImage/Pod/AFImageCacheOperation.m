@@ -17,7 +17,6 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 @implementation AFImageCacheOperation
 {
 	@private __strong AFImageTransform *_transform;
-    @private __strong NSMutableURLRequest *_request;
     @private __strong NSHTTPURLResponse *_response;
     @private __strong NSPurgeableData *_imageData;
 	@private __strong NSCache *_cache;
