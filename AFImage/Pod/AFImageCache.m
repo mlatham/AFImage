@@ -46,12 +46,9 @@ static AFImageCache *_sharedInstance;
 	_cache = [[NSCache alloc]
 		init];
 		
-	// Capture a weak reference to the cache.
-	__weak NSCache *cache = _cache;
-		
 	// Initialize the default image cache operation create block.
-	_imageCacheOperationCreateBlock = ^(NSURL *url,
-		AFImageTransform *transform, BOOL refresh, AFImageCompletionBlock completionBlock)
+	_imageCacheOperationCreateBlock = ^(NSURL *url, AFImageTransform *transform,
+		NSCache *cache, BOOL refresh, AFImageCompletionBlock completionBlock)
 		{
 			return [[AFImageCacheOperation alloc]
 				initWithURL: url
@@ -174,7 +171,7 @@ static AFImageCache *_sharedInstance;
 		}
 		
 		// Create the operation.
-		AFImageCacheOperation *operation = _imageCacheOperationCreateBlock(url, transform, refresh, completionBlock);
+		AFImageCacheOperation *operation = _imageCacheOperationCreateBlock(url, transform, _cache, refresh, completionBlock);
 			
 		// If there's an existing operation or the cached file exists, give the dependent operation a high priority.
 		if (existingOperation != nil

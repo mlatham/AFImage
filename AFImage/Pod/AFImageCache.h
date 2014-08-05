@@ -4,8 +4,8 @@
 #pragma mark Type Definitions
 
 // Block that transforms one image into another.
-typedef AFImageCacheOperation *(^AFImageCacheOperationCreateBlock)(NSURL *url,
-	AFImageTransform *transform, BOOL refresh, AFImageCompletionBlock completionBlock);
+typedef AFImageCacheOperation *(^AFImageCacheOperationCreateBlock)(NSURL *url, AFImageTransform *transform,
+	NSCache *cache, BOOL refresh, AFImageCompletionBlock completionBlock);
 
 
 #pragma mark Class Interface
