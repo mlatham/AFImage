@@ -6,6 +6,8 @@
 @implementation AFImageView
 {
 	@private __weak NSOperation *_imageOperation;
+	
+	@private __strong UIImageView *_placeholderImageView;
 	@private __strong UIImageView *_imageView;
 	@private __strong NSURL *_loadedURL;
 }
@@ -18,6 +20,9 @@
 	// Map content mode to the image view.
 	_imageView.contentMode = contentMode;
 	
+	// Map content mode to the placeholder image view.
+	_placeholderImageView.contentMode = contentMode;
+	
 	// Call base implementation.
 	[super setContentMode: contentMode];
 }
@@ -26,11 +31,8 @@
 {
 	_placeholderImage = placeholderImage;
 	
-	// If the url is not set - apply the placeholder image.
-	if (self.url != nil && [[NSNull null] isEqual: self.url] == NO)
-	{
-		[self _applyPlaceholderImage];
-	}
+	// Set the placeholder image.
+	[self _applyPlaceholderImage];
 }
 
 - (void)setImage: (UIImage *)image
@@ -38,19 +40,8 @@
 	// Clear the URL, if any.
 	self.url = nil;
 
-	// Show the placeholder image, if the image is unset.
-	if (image == nil)
-	{
-		[self _applyPlaceholderImage];
-	}
-	// Otherwise, show the transformed image.
-	else
-	{
-		UIImage *transformedImage = [self _transformImage: image];
-		
-		// Set the image.
-		_imageView.image = transformedImage;
-	}
+	// Show the transformed image (nil if the image is nil).
+	[self _setImage: [self _transformImage: image]];
 }
 
 - (void)setURL: (NSURL *)url
@@ -73,12 +64,16 @@
 	AFImageCache *imageCache = [AFImageCache sharedInstance];
 	
 	// Clear the image.
+	[self _setImage: nil];
+	
+	// Set the placeholder depending on whether it shows while loading.
 	if (_showsPlaceholderWhenLoading == NO)
 	{
-		_imageView.image = nil;
+		_placeholderImageView.image = nil;
 	}
 	else
 	{
+		// Show the placeholder image.
 		[self _applyPlaceholderImage];
 	}
 	
@@ -101,7 +96,7 @@
 					_loadedURL = url;
 					
 					// Set the loaded image.
-					_imageView.image = image;
+					[self _setImage: image];
 				}
 				else if (result == AFImageCacheResultFailed)
 				{
@@ -165,7 +160,13 @@
 	self.contentMode = UIViewContentModeScaleAspectFill;
 	
 	// Initialize the image view.
-	_showsPlaceholderWhenLoading = YES; // By default show the placeholder while loading.
+	_showsPlaceholderWhenLoading = NO; // By default don't show the placeholder while loading.
+	_placeholderImageView = [[UIImageView alloc]
+		initWithFrame: self.bounds];
+	_placeholderImageView.backgroundColor = [UIColor clearColor];
+	_placeholderImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight
+		| UIViewAutoresizingFlexibleWidth;
+	_placeholderImageView.contentMode = self.contentMode;
 	_imageView = [[UIImageView alloc]
 		initWithFrame: self.bounds];
 	_imageView.backgroundColor = [UIColor clearColor];
@@ -180,17 +181,12 @@
 	UIImage *transformedImage = image;
 	
 	// Apply transform, if provided.
-	if (_imageTransform != nil)
+	if (_imageTransform != nil && image != nil)
 	{
 		transformedImage = [_imageTransform transformImage: image];
 	}
 	
 	return transformedImage;
-}
-
-- (void)_applyPlaceholderImage
-{
-	_imageView.image = [self _transformImage: _placeholderImage];
 }
 
 - (void)_cancelOperationIfNecessary
@@ -200,6 +196,63 @@
 	{
 		[_imageOperation cancel];
 		_imageOperation = nil;
+	}
+}
+
+- (void)_applyPlaceholderImage
+{
+	// Set the placeholder image, applying the transformation.
+	_placeholderImageView.image = [self _transformImage: _placeholderImage];
+}
+
+- (void)_setImage: (UIImage *)image
+{
+	// Set the image.
+	_imageView.image = image;
+		
+	// When the image is nil'd out, hide the image view.
+	if (image == nil)
+	{
+		// Animate to cancel any existing image set.
+		[UIView animateWithDuration: 0.01f
+			delay: 0
+			options: UIViewAnimationOptionBeginFromCurrentState
+				| UIViewAnimationOptionCurveEaseInOut
+			animations: ^
+			{
+				_imageView.alpha = 0.f;
+			}
+			completion: ^(BOOL finished)
+			{
+				if (finished)
+				{
+					_imageView.hidden = YES;
+				}
+			}];
+	}
+	else
+	{
+		// Animate, if specified.
+		if (_animate)
+		{
+			[UIView animateWithDuration: 0.3f
+				delay: 0
+				options: UIViewAnimationOptionBeginFromCurrentState
+					| UIViewAnimationOptionCurveEaseInOut
+				animations: ^
+				{
+					_imageView.alpha = 1.f;
+				}
+				completion: nil];
+		}
+		else
+		{
+			// Otherwise, just show it.
+			_imageView.alpha = 1.f;
+		}
+		
+		// Show the image view.
+		_imageView.hidden = NO;
 	}
 }
 
