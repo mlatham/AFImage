@@ -159,14 +159,18 @@
 	// Set the default content mode.
 	self.contentMode = UIViewContentModeScaleAspectFill;
 	
-	// Initialize the image view.
 	_showsPlaceholderWhenLoading = NO; // By default don't show the placeholder while loading.
+	
+	// Initialize the placeholder image view.
 	_placeholderImageView = [[UIImageView alloc]
 		initWithFrame: self.bounds];
 	_placeholderImageView.backgroundColor = [UIColor clearColor];
 	_placeholderImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight
 		| UIViewAutoresizingFlexibleWidth;
 	_placeholderImageView.contentMode = self.contentMode;
+	[self addSubview: _placeholderImageView];
+	
+	// Initialize the image view.
 	_imageView = [[UIImageView alloc]
 		initWithFrame: self.bounds];
 	_imageView.backgroundColor = [UIColor clearColor];
