@@ -236,6 +236,9 @@
 	}
 	else
 	{
+		// Show the image view.
+		_imageView.hidden = NO;
+		
 		// Animate, if specified.
 		if (_animate)
 		{
@@ -254,9 +257,6 @@
 			// Otherwise, just show it.
 			_imageView.alpha = 1.f;
 		}
-		
-		// Show the image view.
-		_imageView.hidden = NO;
 	}
 }
 
