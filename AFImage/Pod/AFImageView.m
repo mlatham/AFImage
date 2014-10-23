@@ -206,58 +206,13 @@
 - (void)_applyPlaceholderImage
 {
 	// Set the placeholder image, applying the transformation.
-	_placeholderImageView.image = [self _transformImage: _placeholderImage];
+	_placeholderImageView.image = _placeholderImage;
 }
 
 - (void)_setImage: (UIImage *)image
 {
 	// Set the image.
 	_imageView.image = image;
-		
-	// When the image is nil'd out, hide the image view.
-	if (image == nil)
-	{
-		// Animate to cancel any existing image set.
-		[UIView animateWithDuration: 0.01f
-			delay: 0
-			options: UIViewAnimationOptionBeginFromCurrentState
-				| UIViewAnimationOptionCurveEaseInOut
-			animations: ^
-			{
-				_imageView.alpha = 0.f;
-			}
-			completion: ^(BOOL finished)
-			{
-				if (finished)
-				{
-					_imageView.hidden = YES;
-				}
-			}];
-	}
-	else
-	{
-		// Show the image view.
-		_imageView.hidden = NO;
-		
-		// Animate, if specified.
-		if (_animate)
-		{
-			[UIView animateWithDuration: 0.3f
-				delay: 0
-				options: UIViewAnimationOptionBeginFromCurrentState
-					| UIViewAnimationOptionCurveEaseInOut
-				animations: ^
-				{
-					_imageView.alpha = 1.f;
-				}
-				completion: nil];
-		}
-		else
-		{
-			// Otherwise, just show it.
-			_imageView.alpha = 1.f;
-		}
-	}
 }
 
 

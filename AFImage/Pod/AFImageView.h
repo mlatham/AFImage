@@ -8,7 +8,6 @@
 
 #pragma mark - Properties
 
-@property (nonatomic, assign) BOOL animate;
 @property (nonatomic, assign) BOOL showsPlaceholderWhenLoading;
 
 @property (nonatomic, strong) AFImageTransform *imageTransform;
