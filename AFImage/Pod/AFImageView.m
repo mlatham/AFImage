@@ -7,7 +7,6 @@
 {
 	@private __weak NSOperation *_imageOperation;
 	
-	@private __strong UIImageView *_placeholderImageView;
 	@private __strong UIImageView *_imageView;
 	@private __strong NSURL *_loadedURL;
 }
@@ -15,13 +14,16 @@
 
 #pragma mark - Properties
 
+- (void)setPlaceholderContentMode: (UIViewContentMode)placeholderContentMode
+{
+	// Set the placeholder image view.
+	_placeholderImageView.contentMode = placeholderContentMode;
+}
+
 - (void)setContentMode: (UIViewContentMode)contentMode
 {
 	// Map content mode to the image view.
 	_imageView.contentMode = contentMode;
-	
-	// Map content mode to the placeholder image view.
-	_placeholderImageView.contentMode = contentMode;
 	
 	// Call base implementation.
 	[super setContentMode: contentMode];
@@ -158,6 +160,7 @@
 {
 	// Set the default content mode.
 	self.contentMode = UIViewContentModeScaleAspectFill;
+	self.placeholderContentMode = UIViewContentModeScaleAspectFill;
 	
 	_showsPlaceholderWhenLoading = NO; // By default don't show the placeholder while loading.
 	
