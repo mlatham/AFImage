@@ -7,7 +7,6 @@
 {
 	@private __weak NSOperation *_imageOperation;
 	
-	@private __strong UIImageView *_imageView;
 	@private __strong NSURL *_loadedURL;
 }
 

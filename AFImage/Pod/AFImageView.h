@@ -20,6 +20,8 @@
 	refresh: (BOOL)refresh;
 
 @property (nonatomic, strong) UIImageView *placeholderImageView;
+@property (nonatomic, strong) UIImageView *imageView;
+
 @property (nonatomic, strong) UIImage *placeholderImage;
 @property (nonatomic, strong) UIImage *image;
 
