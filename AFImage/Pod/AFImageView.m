@@ -5,6 +5,18 @@
 
 @implementation AFImageView
 {
+	// These are unset if removed from this view.
+	@private __weak NSLayoutConstraint *_placeholderHeightConstraint;
+	@private __weak NSLayoutConstraint *_placeholderWidthConstraint;
+	@private __weak NSLayoutConstraint *_placeholderLeftConstraint;
+	@private __weak NSLayoutConstraint *_placeholderTopConstraint;
+	
+	// These are unset if removed from this view.
+	@private __weak NSLayoutConstraint *_imageHeightConstraint;
+	@private __weak NSLayoutConstraint *_imageWidthConstraint;
+	@private __weak NSLayoutConstraint *_imageLeftConstraint;
+	@private __weak NSLayoutConstraint *_imageTopConstraint;
+
 	@private __weak NSOperation *_imageOperation;
 	
 	@private __strong NSURL *_loadedURL;
@@ -155,13 +167,125 @@
 
 #pragma mark - Private Methods
 
+- (void)updateConstraints
+{
+	// Placeholder constraints.
+	if (_placeholderTopConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeTop
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeTop
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_placeholderTopConstraint = constraint;
+	}
+	
+	if (_placeholderLeftConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeLeft
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeLeft
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_placeholderLeftConstraint = constraint;
+	}
+	
+	if (_placeholderWidthConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeWidth
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeWidth
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_placeholderWidthConstraint = constraint;
+	}
+	
+	if (_placeholderHeightConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeHeight
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeHeight
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_placeholderHeightConstraint = constraint;
+	}
+	
+	// Image constraints.
+	if (_imageTopConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeTop
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeTop
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_imageTopConstraint = constraint;
+	}
+	
+	if (_imageLeftConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeLeft
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeLeft
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_imageLeftConstraint = constraint;
+	}
+	
+	if (_imageWidthConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeWidth
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeWidth
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_imageWidthConstraint = constraint;
+	}
+	
+	if (_imageHeightConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeHeight
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeHeight
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_imageHeightConstraint = constraint;
+	}
+	
+	[super updateConstraints];
+}
+
 - (void)_initializeImageView
 {
 	// Set the default content mode.
 	self.contentMode = UIViewContentModeScaleAspectFill;
 	self.placeholderContentMode = UIViewContentModeScaleAspectFill;
 	
-	_showsPlaceholderWhenLoading = NO; // By default don't show the placeholder while loading.
+	// By default don't show the placeholder while loading.
+	_showsPlaceholderWhenLoading = NO;
 	
 	// Initialize the placeholder image view.
 	_placeholderImageView = UIImageView.new;
@@ -177,75 +301,8 @@
 	_imageView.contentMode = self.contentMode;
 	[self addSubview: _imageView];
 	
-	// Add constraints.
-	[self addConstraints:
-	@[
-		// Placeholder image view.
-		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeTop
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeTop
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeLeft
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeLeft
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeWidth
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeWidth
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeHeight
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeHeight
-			multiplier: 1.0
-			constant: 0.f],
-		
-		// Image view constraints.
-		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeTop
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeTop
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeLeft
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeLeft
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeWidth
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeWidth
-			multiplier: 1.0
-			constant: 0.f],
-		
-		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeHeight
-			relatedBy: NSLayoutRelationEqual
-			toItem: self
-			attribute: NSLayoutAttributeHeight
-			multiplier: 1.0
-			constant: 0.f]
-	]];
+	// Set that the constraints need an update.
+	[self setNeedsUpdateConstraints];
 }
 
 - (UIImage *)_transformImage: (UIImage *)image
