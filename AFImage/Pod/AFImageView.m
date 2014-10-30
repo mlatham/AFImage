@@ -164,22 +164,88 @@
 	_showsPlaceholderWhenLoading = NO; // By default don't show the placeholder while loading.
 	
 	// Initialize the placeholder image view.
-	_placeholderImageView = [[UIImageView alloc]
-		initWithFrame: self.bounds];
+	_placeholderImageView = UIImageView.new;
+	_placeholderImageView.translatesAutoresizingMaskIntoConstraints = NO;
 	_placeholderImageView.backgroundColor = [UIColor clearColor];
-	_placeholderImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight
-		| UIViewAutoresizingFlexibleWidth;
 	_placeholderImageView.contentMode = self.contentMode;
 	[self addSubview: _placeholderImageView];
 	
 	// Initialize the image view.
-	_imageView = [[UIImageView alloc]
-		initWithFrame: self.bounds];
+	_imageView = UIImageView.new;
+	_imageView.translatesAutoresizingMaskIntoConstraints = NO;
 	_imageView.backgroundColor = [UIColor clearColor];
-	_imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight
-		| UIViewAutoresizingFlexibleWidth;
 	_imageView.contentMode = self.contentMode;
 	[self addSubview: _imageView];
+	
+	// Add constraints.
+	[self addConstraints:
+	@[
+		// Placeholder image view.
+		[NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeTop
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeTop
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeLeft
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeLeft
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeBottom
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeBottom
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _placeholderImageView
+			attribute: NSLayoutAttributeRight
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeRight
+			multiplier: 1.0
+			constant: 0.f],
+		
+		// Image view constraints.
+		[NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeTop
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeTop
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeLeft
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeLeft
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeBottom
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeBottom
+			multiplier: 1.0
+			constant: 0.f],
+		
+		[NSLayoutConstraint constraintWithItem: _imageView
+			attribute: NSLayoutAttributeRight
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeRight
+			multiplier: 1.0
+			constant: 0.f]
+	]];
 }
 
 - (UIImage *)_transformImage: (UIImage *)image
