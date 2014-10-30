@@ -198,18 +198,18 @@
 			constant: 0.f],
 		
 		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeBottom
+			attribute: NSLayoutAttributeWidth
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
-			attribute: NSLayoutAttributeBottom
+			attribute: NSLayoutAttributeWidth
 			multiplier: 1.0
 			constant: 0.f],
 		
 		[NSLayoutConstraint constraintWithItem: _placeholderImageView
-			attribute: NSLayoutAttributeRight
+			attribute: NSLayoutAttributeHeight
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
-			attribute: NSLayoutAttributeRight
+			attribute: NSLayoutAttributeHeight
 			multiplier: 1.0
 			constant: 0.f],
 		
@@ -231,18 +231,18 @@
 			constant: 0.f],
 		
 		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeBottom
+			attribute: NSLayoutAttributeWidth
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
-			attribute: NSLayoutAttributeBottom
+			attribute: NSLayoutAttributeWidth
 			multiplier: 1.0
 			constant: 0.f],
 		
 		[NSLayoutConstraint constraintWithItem: _imageView
-			attribute: NSLayoutAttributeRight
+			attribute: NSLayoutAttributeHeight
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
-			attribute: NSLayoutAttributeRight
+			attribute: NSLayoutAttributeHeight
 			multiplier: 1.0
 			constant: 0.f]
 	]];
