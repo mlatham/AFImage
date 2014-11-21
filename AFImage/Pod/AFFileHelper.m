@@ -83,8 +83,10 @@ static inline NSURL *mainBundleURLForFile(NSString *file)
 {
 	NSURL *url = [[self documentsURL] URLByAppendingPathComponent: file 
 		isDirectory: NO];
-	return [_fileManager fileExistsAtPath: [url path] 
-		isDirectory: NO];
+	BOOL isDirectory = NO;
+	BOOL exists = [_fileManager fileExistsAtPath: [url path]
+		isDirectory: &isDirectory];
+	return exists && !isDirectory;
 }
 	
 + (NSURL *)documentsURL
@@ -112,8 +114,10 @@ static inline NSURL *mainBundleURLForFile(NSString *file)
 {
 	NSURL *url = [[self cacheURL] URLByAppendingPathComponent: file 
 		isDirectory: NO];
-	return [_fileManager fileExistsAtPath: [url path] 
-		isDirectory: NO];
+	BOOL isDirectory = NO;
+	BOOL exists = [_fileManager fileExistsAtPath: [url path]
+		isDirectory: &isDirectory];
+	return exists && !isDirectory;
 }
 
 + (NSURL *)cacheURL
