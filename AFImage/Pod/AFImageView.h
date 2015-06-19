@@ -1,3 +1,4 @@
+#import "AFImageTransform.h"
 
 
 #pragma mark Enumerations
