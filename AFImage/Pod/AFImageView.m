@@ -123,15 +123,16 @@
 					// Set the loaded image.
 					_imageView.image = image;
 					
-					// Set the image image to loaded state.
+					// Only animate the transition if coming from a web request, and animation is requested.
 					[self setState: AFImageViewStateImageLoaded
-						animated: animated];
+						animated: animated
+							&& result == AFImageCacheResultSuccessFromURL];
 				}
 				else if (result == AFImageCacheResultFailed)
 				{
 					// Show the placeholder image.
 					[self setState: AFImageViewStateImageFailed
-						animated: animated];
+						animated: NO];
 				}
 			}];
 	}
