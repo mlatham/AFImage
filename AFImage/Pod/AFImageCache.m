@@ -1,4 +1,8 @@
+//#define DEBUG_IMAGE_CACHE_OPERATION
+
+#import <CommonCrypto/CommonDigest.h>
 #import "AFImageCache.h"
+#import "AFFileHelper.h"
 
 
 #pragma mark Class Variables
@@ -55,6 +59,7 @@ static AFImageCache *_sharedInstance;
 				cache: cache
 				transform: transform
 				refresh: refresh
+				useDiskCache: NO // Don't use an on-disk cache by default.
 				completionBlock: completionBlock];
 		};
 	
@@ -112,6 +117,110 @@ static AFImageCache *_sharedInstance;
 		transform: transform
 		refresh: refresh
 		completionBlock: completionBlock];
+}
+
++ (NSString *)cacheKeyForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform
+{
+	NSString *cacheKey = [NSString stringWithFormat: @"%@_%@",
+		[url absoluteString], transform.key];
+		
+	return cacheKey;
+}
+
++ (NSString *)cacheFilenameForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform
+{
+    const char *cStr = [[self cacheKeyForURL: url transform: transform] UTF8String];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+
+    CC_MD5( cStr, (CC_LONG)strlen(cStr), result );
+
+    return [NSString stringWithFormat: @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+        result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+        result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15] ];
+}
+
++ (NSPurgeableData *)diskCacheDataForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform
+{
+	// Get the disk cache url.
+	NSURL *diskCacheURL = [AFImageCache diskCacheURLForURL: url
+		transform: transform];
+	
+	// Attempt to get the cached data.
+	NSPurgeableData *data = [NSPurgeableData dataWithContentsOfURL: diskCacheURL];
+	return data;
+}
+
++ (NSURL *)diskCacheURLForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform
+{
+	// Generate the disk cache filename.
+	NSString *diskCacheFilename = [self cacheFilenameForURL: url
+		transform: transform];
+	
+	// Format the disk cache path.
+	NSString *diskCachePath = [NSString stringWithFormat: @"%@/%@",
+		[[NSBundle mainBundle] bundleIdentifier], diskCacheFilename];
+		
+	// Get the local cache URL.
+	NSURL *localCacheURL = [AFFileHelper cacheURLByAppendingPath: diskCachePath];
+	return localCacheURL;
+}
+
++ (BOOL)diskCacheDataExistsForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform
+{
+	// Get the cache url.
+	NSURL *diskCacheURL = [self diskCacheURLForURL: url
+		transform: transform];
+	
+	// Get whether or not the cache file exists.
+	BOOL exists = [AFFileHelper fileExists: diskCacheURL];
+	return exists;
+}
+
++ (BOOL)writeDataToDiskCache: (NSPurgeableData *)data
+	url: (NSURL *)url
+	overwrite: (BOOL)overwrite
+	transform: (AFImageTransform *)transform
+{
+	BOOL exists = NO;
+	BOOL wrote = NO;
+
+	// Only verify existence if overwrite is not specified.
+	if (overwrite == NO)
+	{
+		exists = [self diskCacheDataExistsForURL: url
+			transform: transform];
+	}
+
+	// Write the data.
+	if (overwrite == YES
+		|| exists == NO)
+	{
+		// Get the cache url.
+		NSURL *diskCacheURL = [self diskCacheURLForURL: url
+			transform: transform];
+		
+		// Write the data.
+		BOOL wrote = [data writeToURL: diskCacheURL
+			atomically: YES];
+	
+		if (wrote == NO)
+		{
+			AFLog(@"Failed to cache: %@", url);
+		}
+#ifdef DEBUG_IMAGE_CACHE_OPERATION
+		else
+		{
+			AFLog(AFLogLevelDebug, @"Cached: %@", url);
+		}
+#endif
+	}
+	
+	return wrote;
 }
 
 

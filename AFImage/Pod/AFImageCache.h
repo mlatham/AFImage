@@ -43,4 +43,27 @@ typedef AFImageCacheOperation *(^AFImageCacheOperationCreateBlock)(NSURL *url, A
 	completionBlock: (AFImageCompletionBlock)completionBlock;
 
 
+#pragma mark - Disk Cache Methods
+
++ (NSString *)cacheKeyForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform;
+
++ (NSString *)cacheFilenameForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform;
+
++ (NSPurgeableData *)diskCacheDataForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform;
+
++ (NSURL *)diskCacheURLForURL: (NSURL *)url
+	transform: (AFImageTransform *)transform;
+
++ (BOOL)urlExistsInDiskCache: (NSURL *)url
+	transform: (AFImageTransform *)transform;
+
++ (BOOL)writeDataToDiskCache: (NSPurgeableData *)data
+	url: (NSURL *)url
+	overwrite: (BOOL)overwrite
+	transform: (AFImageTransform *)transform;
+
+
 @end // @interface AFImageCache

@@ -1,9 +1,5 @@
-//#define DEBUG_IMAGE_CACHE_OPERATION
-
-
-#import <CommonCrypto/CommonDigest.h>
 #import "AFImageCacheOperation.h"
-#import "AFFileHelper.h"
+#import "AFImageCache.h"
 
 
 #pragma mark Constants
@@ -21,9 +17,10 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
     @private __strong NSPurgeableData *_imageData;
 	@private __strong NSCache *_cache;
 	
-	@private BOOL _refresh;
+	@private BOOL _useDiskCache;
 	@private BOOL _executing;
 	@private BOOL _finished;
+	@private BOOL _refresh;
 	
 	@private AFImageCompletionBlock _completionBlock;
 	@private AFImageCacheResult _result;
@@ -76,14 +73,6 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 	return YES;
 }
 
-- (NSString *)cacheKey
-{
-	NSString *cacheKey = [AFImageCacheOperation _cacheKeyForURL: _request.URL
-		transform: _transform];
-	
-	return cacheKey;
-}
-
 
 #pragma mark - Constructors
 
@@ -91,6 +80,7 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 	cache: (NSCache *)cache
 	transform: (AFImageTransform *)transform
 	refresh: (BOOL)refresh
+	useDiskCache: (BOOL)useDiskCache
     completionBlock: (AFImageCompletionBlock)completionBlock
 {
     // Abort if base initializer fails.
@@ -107,7 +97,7 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 	
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL: url
 		cachePolicy: NSURLRequestUseProtocolCachePolicy
-		timeoutInterval: 60.0];
+		timeoutInterval: 10.0];
 	
 	// Initialize instance variables.
     _request = request;
@@ -116,6 +106,7 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 		? [completionBlock copy]
 		: nil;
 	_result = AFImageCacheResultUnknown;
+	_useDiskCache = useDiskCache;
 	_refresh = refresh;
 	_cache = cache;
 
@@ -125,12 +116,11 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 
 #pragma mark - Public Methods
 
-+ (NSString *)_cacheKeyForURL: (NSURL *)url
-	transform: (AFImageTransform *)transform
+- (NSString *)cacheKey
 {
-	NSString *cacheKey = [NSString stringWithFormat: @"%@_%@",
-		[url absoluteString], transform.key];
-		
+	NSString *cacheKey = [AFImageCache cacheKeyForURL: _request.URL
+		transform: _transform];
+	
 	return cacheKey;
 }
 
@@ -144,7 +134,7 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 	UIImage *image = nil;
 	
 	// Get the cache key.
-	NSString *cacheKey = [self _cacheKeyForURL: url
+	NSString *cacheKey = [AFImageCache cacheKeyForURL: url
 		transform: transform];
 	
 	if ([[cache objectForKey: cacheKey] beginContentAccess] == YES)
@@ -154,6 +144,9 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 		
 		// Cached data is pre-transformed.
 		image = [UIImage imageWithData: data];
+		
+		// End the content access of the data.
+		[[cache objectForKey: cacheKey] endContentAccess];
 	}
 	
 	return image;
@@ -192,11 +185,15 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
     {
 		// Create the connection.
         NSURLConnection *connection = nil;
-        
+		
+		// Track whether the purgeable data has been accessed.
+		BOOL didBeginContentAccess = NO;
+		
 		@try
         {
 			// If image data exists in the cache, use it.
-			if (_refresh == NO && [[_cache objectForKey: self.cacheKey] beginContentAccess] == YES)
+			if (_refresh == NO
+				&& (didBeginContentAccess = [[_cache objectForKey: self.cacheKey] beginContentAccess]) == YES)
 			{
 				// Set the image data from the cache.
 				_imageData = [_cache objectForKey: self.cacheKey];
@@ -260,15 +257,26 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 			{
 				UIImage *image = nil;
 				
-				if (_result == AFImageCacheResultFailed
-					|| (_imageData != nil
-					&& [_imageData length] == 0))
+				// Attempt to load the image from disk, if a disk cache is specified.
+				if (_useDiskCache == YES)
 				{
-					// Returns nil if the cache data doesn't exist.
-					_imageData = [self _readCacheImageData];
-					
-					// Successfully read the file from disk.
-					_result = AFImageCacheResultSuccessFromDiskCache;
+					// Use the disk cache, if available.
+					if (_result == AFImageCacheResultFailed
+						|| (_imageData != nil
+						&& [_imageData length] == 0))
+					{
+						// Returns nil if the cache data doesn't exist.
+						_imageData = [AFImageCache diskCacheDataForURL: _request.URL
+							transform: _transform];
+						
+						// Check the data.
+						if (_imageData != nil
+							&& [_imageData length] == 0)
+						{
+							// Successfully read the file from disk.
+							_result = AFImageCacheResultSuccessFromDiskCache;
+						}
+					}
 				}
 				
 				if (_result != AFImageCacheResultFailed
@@ -290,7 +298,7 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 						image = [UIImage imageWithData: _imageData];
 					}
 				
-					// Cache the data in memory, if required.
+					// Cache the data in memory, if it was just loaded.
 					if (_result == AFImageCacheResultSuccessFromDiskCache
 						|| _result == AFImageCacheResultSuccessFromURL)
 					{
@@ -298,27 +306,14 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 							forKey: self.cacheKey];
 					}
 					
-					// Cache the data to disk, if it doesn't exist.
-					if ([self _cacheImageDataExists] == NO)
+					// Write the data to the disk cache, if it doesn't exist and the disk cache is being used.
+					if (_useDiskCache)
 					{
-						BOOL wrote = [self _writeCacheImageData: _imageData];
-							
-						if (wrote == NO)
-						{
-							AFLog(@"Failed to cache: %@", _request.URL);
-						}
-#ifdef DEBUG_IMAGE_CACHE_OPERATION
-						else
-						{
-							AFLog(AFLogLevelDebug, @"Cached: %@", _request.URL);
-						}
-#endif
-					}
-											
-					// End content access, if it was loaded from the cache.
-					if (_result == AFImageCacheResultSuccessFromMemoryCache)
-					{
-						[_imageData endContentAccess];
+						// Only overwrite local on-disk data on success from a URL.
+						[AFImageCache writeDataToDiskCache: _imageData
+							url: _request.URL
+							overwrite: _result == AFImageCacheResultSuccessFromURL
+							transform: _transform];
 					}
 					
 					// Raise completion.
@@ -334,7 +329,13 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 					[self _raiseCompletionWithImage: nil];
 				}
 			}
-        
+			
+			// End content access, if it was begun earlier.
+			if (didBeginContentAccess == YES)
+			{
+				[_imageData endContentAccess];
+			}
+			
             // Raise executing/finished notifcations.
             [self willChangeValueForKey: IsFinishedKeyPath];
             [self willChangeValueForKey: IsExecutingKeyPath];
@@ -359,62 +360,6 @@ static NSString * const IsExecutingKeyPath = @"isExecuting";
 
 
 #pragma mark - Private Methods
-
-- (NSString *)_cacheFilename
-{
-    const char *cStr = [self.cacheKey UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-
-    CC_MD5( cStr, (CC_LONG)strlen(cStr), result );
-
-    return [NSString stringWithFormat: @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-        result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
-        result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15] ];
-}
-
-- (NSURL *)_localCacheURL
-{
-	// Generate the disk cache filename.
-	NSString *diskCacheFilename = [self _cacheFilename];
-		
-	// Format the disk cache path.
-	NSString *diskCachePath = [NSString stringWithFormat: @"%@/%@",
-		[[NSBundle mainBundle] bundleIdentifier], diskCacheFilename];
-		
-	// Get the local cache URL.
-	NSURL *localCacheURL = [AFFileHelper cacheURLByAppendingPath: diskCachePath];
-	return localCacheURL;
-}
-
-- (BOOL)_cacheImageDataExists
-{
-	// Get the cache url.
-	NSURL *localCacheURL = [self _localCacheURL];
-	
-	// Get whether or not the cache file exists.
-	BOOL exists = [AFFileHelper fileExists: localCacheURL];
-	return exists;
-}
-
-- (NSPurgeableData *)_readCacheImageData
-{
-	// Get the cache url.
-	NSURL *localCacheURL = [self _localCacheURL];
-	
-	// Attempt to get the cached data.
-	NSPurgeableData *data = [NSPurgeableData dataWithContentsOfURL: localCacheURL];
-	return data;
-}
-
-- (BOOL)_writeCacheImageData: (NSPurgeableData *)data
-{
-	// Get the cache url.
-	NSURL *localCacheURL = [self _localCacheURL];
-	
-	// Write the data.
-	return [data writeToURL: localCacheURL
-		atomically: YES];
-}
 
 - (void)_raiseCompletionWithImage: (UIImage *)image
 {

@@ -102,7 +102,6 @@
 			completionBlock: ^(AFImageCacheResult result, UIImage *image)
 			{
 				if (result == AFImageCacheResultSuccessFromMemoryCache
-					|| result == AFImageCacheResultSuccessFromDiskCache
 					|| result == AFImageCacheResultSuccessFromURL)
 				{
 					// Got the image.
