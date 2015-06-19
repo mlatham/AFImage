@@ -1,4 +1,5 @@
 #import "AFImageView.h"
+#import "AFImageCache.h"
 
 
 #pragma mark Class Definition
@@ -6,10 +7,10 @@
 @implementation AFImageView
 {
 	// These are unset if removed from this view.
-	@private __weak NSLayoutConstraint *_placeholderHeightConstraint;
-	@private __weak NSLayoutConstraint *_placeholderWidthConstraint;
-	@private __weak NSLayoutConstraint *_placeholderLeftConstraint;
-	@private __weak NSLayoutConstraint *_placeholderTopConstraint;
+	@private __weak NSLayoutConstraint *_failedHeightConstraint;
+	@private __weak NSLayoutConstraint *_failedWidthConstraint;
+	@private __weak NSLayoutConstraint *_failedLeftConstraint;
+	@private __weak NSLayoutConstraint *_failedTopConstraint;
 	
 	// These are unset if removed from this view.
 	@private __weak NSLayoutConstraint *_imageHeightConstraint;
@@ -25,40 +26,58 @@
 
 #pragma mark - Properties
 
-- (void)setPlaceholderContentMode: (UIViewContentMode)placeholderContentMode
+- (void)setFailedImageContentMode: (UIViewContentMode)failedImageContentMode
 {
 	// Set the placeholder image view.
-	_placeholderImageView.contentMode = placeholderContentMode;
+	_failedImageView.contentMode = failedImageContentMode;
 }
 
 - (void)setContentMode: (UIViewContentMode)contentMode
 {
-	// Map content mode to the image view.
+	// Map content mode to the image view, as well.
 	_imageView.contentMode = contentMode;
 	
 	// Call base implementation.
 	[super setContentMode: contentMode];
 }
 
-- (void)setPlaceholderImage: (UIImage *)placeholderImage
+- (void)setFailedImage: (UIImage *)failedImage
 {
-	_placeholderImage = placeholderImage;
+	_failedImage = failedImage;
 	
-	// Set the placeholder image.
-	[self _applyPlaceholderImage];
+	// Set the failed image, applying the transformation.
+	_failedImageView.image = [self _transformImage: _failedImage];
 }
 
 - (void)setImage: (UIImage *)image
 {
+	// Set the image - don't animate.
+	[self setImage: image
+		animated: NO];
+}
+
+- (void)setImage: (UIImage *)image
+	animated: (BOOL)animated
+{
 	// Clear the URL, if any.
 	self.url = nil;
 
+	// Transform the image.
+	image = [self _transformImage: image];
+
 	// Show the transformed image (nil if the image is nil).
-	[self _setImage: [self _transformImage: image]];
+	_imageView.image = image;
+	
+	// If the image is non-nil, set the state.
+	[self setState: image != nil
+		? AFImageViewStateImageLoaded
+		: AFImageViewStateImageFailed
+		animated: animated];
 }
 
 - (void)setURL: (NSURL *)url
 	refresh: (BOOL)refresh
+	animated: (BOOL)animated
 {
 	// Don't reload the same URL.
 	if (refresh == NO
@@ -74,27 +93,20 @@
 	// Clear any last loaded URL.
 	_loadedURL = nil;
 	
-	AFImageCache *imageCache = [AFImageCache sharedInstance];
-	
 	// Clear the image.
-	[self _setImage: nil];
-	
-	// Set the placeholder depending on whether it shows while loading.
-	if (_showsPlaceholderWhenLoading == NO)
-	{
-		_placeholderImageView.image = nil;
-	}
-	else
-	{
-		// Show the placeholder image.
-		[self _applyPlaceholderImage];
-	}
+	_imageView.image = nil;
 	
 	// Set the url.
 	_url = url;
 	
 	if (url != nil && [[NSNull null] isEqual: url] == NO)
 	{
+		AFImageCache *imageCache = [AFImageCache sharedInstance];
+		
+		// Set the image state to loading.
+		[self setState: AFImageViewStateEmpty
+			animated: NO];
+		
 		// Load the image.
 		_imageOperation = [imageCache imageWithURL: url
 			transform: _imageTransform
@@ -102,32 +114,41 @@
 			completionBlock: ^(AFImageCacheResult result, UIImage *image)
 			{
 				if (result == AFImageCacheResultSuccessFromMemoryCache
+					|| result == AFImageCacheResultSuccessFromDiskCache
 					|| result == AFImageCacheResultSuccessFromURL)
 				{
 					// Got the image.
 					_loadedURL = url;
 					
 					// Set the loaded image.
-					[self _setImage: image];
+					_imageView.image = image;
+					
+					// Set the image image to loaded state.
+					[self setState: AFImageViewStateImageLoaded
+						animated: animated];
 				}
 				else if (result == AFImageCacheResultFailed)
 				{
 					// Show the placeholder image.
-					[self _applyPlaceholderImage];
+					[self setState: AFImageViewStateImageFailed
+						animated: animated];
 				}
 			}];
 	}
 	else
 	{
-		// Show the placeholder image.
-		[self _applyPlaceholderImage];
+		// Set the image state to loading.
+		[self setState: AFImageViewStateEmpty
+			animated: NO];
 	}
 }
 
 - (void)setUrl: (NSURL *)url
 {
+	// By default use
 	[self setURL: url
-		refresh: NO];
+		refresh: NO
+		animated: YES];
 }
 
 
@@ -169,9 +190,9 @@
 - (void)updateConstraints
 {
 	// Placeholder constraints.
-	if (_placeholderTopConstraint == nil)
+	if (_failedTopConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
 			attribute: NSLayoutAttributeTop
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -179,12 +200,12 @@
 			multiplier: 1.0
 			constant: 0.f];
 		[self addConstraint: constraint];
-		_placeholderTopConstraint = constraint;
+		_failedTopConstraint = constraint;
 	}
 	
-	if (_placeholderLeftConstraint == nil)
+	if (_failedLeftConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
 			attribute: NSLayoutAttributeLeft
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -192,12 +213,12 @@
 			multiplier: 1.0
 			constant: 0.f];
 		[self addConstraint: constraint];
-		_placeholderLeftConstraint = constraint;
+		_failedLeftConstraint = constraint;
 	}
 	
-	if (_placeholderWidthConstraint == nil)
+	if (_failedWidthConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
 			attribute: NSLayoutAttributeWidth
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -205,12 +226,12 @@
 			multiplier: 1.0
 			constant: 0.f];
 		[self addConstraint: constraint];
-		_placeholderWidthConstraint = constraint;
+		_failedWidthConstraint = constraint;
 	}
 	
-	if (_placeholderHeightConstraint == nil)
+	if (_failedHeightConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _placeholderImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
 			attribute: NSLayoutAttributeHeight
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -218,7 +239,7 @@
 			multiplier: 1.0
 			constant: 0.f];
 		[self addConstraint: constraint];
-		_placeholderHeightConstraint = constraint;
+		_failedHeightConstraint = constraint;
 	}
 	
 	// Image constraints.
@@ -281,17 +302,14 @@
 {
 	// Set the default content mode.
 	self.contentMode = UIViewContentModeScaleAspectFill;
-	self.placeholderContentMode = UIViewContentModeScaleAspectFill;
-	
-	// By default don't show the placeholder while loading.
-	_showsPlaceholderWhenLoading = NO;
+	self.failedImageContentMode = UIViewContentModeScaleAspectFill;
 	
 	// Initialize the placeholder image view.
-	_placeholderImageView = UIImageView.new;
-	_placeholderImageView.translatesAutoresizingMaskIntoConstraints = NO;
-	_placeholderImageView.backgroundColor = [UIColor clearColor];
-	_placeholderImageView.contentMode = self.contentMode;
-	[self addSubview: _placeholderImageView];
+	_failedImageView = UIImageView.new;
+	_failedImageView.translatesAutoresizingMaskIntoConstraints = NO;
+	_failedImageView.backgroundColor = [UIColor clearColor];
+	_failedImageView.contentMode = self.failedImageContentMode;
+	[self addSubview: _failedImageView];
 	
 	// Initialize the image view.
 	_imageView = UIImageView.new;
@@ -327,16 +345,36 @@
 	}
 }
 
-- (void)_applyPlaceholderImage
+- (void)setState: (AFImageViewState)state
+	animated: (BOOL)animated
 {
-	// Set the placeholder image, applying the transformation.
-	_placeholderImageView.image = _placeholderImage;
-}
-
-- (void)_setImage: (UIImage *)image
-{
-	// Set the image.
-	_imageView.image = image;
+	CGFloat failedImageViewAlpha = state == AFImageViewStateImageFailed
+		? 1.f
+		: 0.f;
+	CGFloat imageViewAlpha = state == AFImageViewStateImageLoaded
+		? 1.f
+		: 0.f;
+	
+	if (animated)
+	{
+		// Animate the state change.
+		[UIView animateWithDuration: 0.2
+			delay: 0
+			options: UIViewAnimationOptionAllowUserInteraction
+				| UIViewAnimationOptionCurveEaseOut
+			animations: ^
+			{
+				_failedImageView.alpha = failedImageViewAlpha;
+				_imageView.alpha = imageViewAlpha;
+			}
+			completion: nil];
+	}
+	else
+	{
+		// Apply the state change directly.
+		_failedImageView.alpha = failedImageViewAlpha;
+		_imageView.alpha = imageViewAlpha;
+	}
 }
 
 
