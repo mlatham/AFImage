@@ -19,17 +19,19 @@ typedef enum
 
 #pragma mark - Properties
 
-@property (nonatomic, assign) UIViewContentMode failedImageContentMode;
+// View that will be shown when the remote image fails to load. Add custom failure views to this view.
+@property (nonatomic, strong, readonly) UIView *failedView;
+
+// View that will be shown when this image view has no content (or is loading). Add custom loading views to this view.
+@property (nonatomic, strong, readonly) UIView *emptyView;
+
+// Image view that shows the loaded image.
+@property (nonatomic, strong, readonly) UIImageView *imageView;
 
 @property (nonatomic, strong) AFImageTransform *imageTransform;
-
-@property (nonatomic, strong) UIImageView *failedImageView;
-@property (nonatomic, strong) UIImageView *imageView;
-
-@property (nonatomic, strong) UIImage *failedImage;
 @property (nonatomic, strong) UIImage *image;
 
-// TODO: Progressive load.
+// TODO: Progressive load?
 @property (nonatomic, copy) NSURL *url;
 
 

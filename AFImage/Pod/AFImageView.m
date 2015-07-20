@@ -7,6 +7,12 @@
 @implementation AFImageView
 {
 	// These are unset if removed from this view.
+	@private __weak NSLayoutConstraint *_emptyHeightConstraint;
+	@private __weak NSLayoutConstraint *_emptyWidthConstraint;
+	@private __weak NSLayoutConstraint *_emptyLeftConstraint;
+	@private __weak NSLayoutConstraint *_emptyTopConstraint;
+
+	// These are unset if removed from this view.
 	@private __weak NSLayoutConstraint *_failedHeightConstraint;
 	@private __weak NSLayoutConstraint *_failedWidthConstraint;
 	@private __weak NSLayoutConstraint *_failedLeftConstraint;
@@ -26,12 +32,6 @@
 
 #pragma mark - Properties
 
-- (void)setFailedImageContentMode: (UIViewContentMode)failedImageContentMode
-{
-	// Set the placeholder image view.
-	_failedImageView.contentMode = failedImageContentMode;
-}
-
 - (void)setContentMode: (UIViewContentMode)contentMode
 {
 	// Map content mode to the image view, as well.
@@ -39,14 +39,6 @@
 	
 	// Call base implementation.
 	[super setContentMode: contentMode];
-}
-
-- (void)setFailedImage: (UIImage *)failedImage
-{
-	_failedImage = failedImage;
-	
-	// Set the failed image, applying the transformation.
-	_failedImageView.image = [self _transformImage: _failedImage];
 }
 
 - (void)setImage: (UIImage *)image
@@ -152,6 +144,38 @@
 		animated: YES];
 }
 
+- (void)setState: (AFImageViewState)state
+	animated: (BOOL)animated
+{
+	CGFloat failedViewAlpha = state == AFImageViewStateImageFailed
+		? 1.f
+		: 0.f;
+	CGFloat imageViewAlpha = state == AFImageViewStateImageLoaded
+		? 1.f
+		: 0.f;
+	
+	if (animated)
+	{
+		// Animate the state change.
+		[UIView animateWithDuration: 0.2
+			delay: 0
+			options: UIViewAnimationOptionAllowUserInteraction
+				| UIViewAnimationOptionCurveEaseOut
+			animations: ^
+			{
+				_failedView.alpha = failedViewAlpha;
+				_imageView.alpha = imageViewAlpha;
+			}
+			completion: nil];
+	}
+	else
+	{
+		// Apply the state change directly.
+		_failedView.alpha = failedViewAlpha;
+		_imageView.alpha = imageViewAlpha;
+	}
+}
+
 
 #pragma mark - Constructors
 
@@ -186,14 +210,67 @@
 }
 
 
-#pragma mark - Private Methods
+#pragma mark - Overridden Methods
 
 - (void)updateConstraints
 {
-	// Placeholder constraints.
+	// Empty constraints.
+	if (_emptyTopConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _emptyView
+			attribute: NSLayoutAttributeTop
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeTop
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_emptyTopConstraint = constraint;
+	}
+	
+	if (_emptyLeftConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _emptyView
+			attribute: NSLayoutAttributeLeft
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeLeft
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_emptyLeftConstraint = constraint;
+	}
+	
+	if (_emptyWidthConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _emptyView
+			attribute: NSLayoutAttributeWidth
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeWidth
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_emptyWidthConstraint = constraint;
+	}
+	
+	if (_emptyHeightConstraint == nil)
+	{
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _emptyView
+			attribute: NSLayoutAttributeHeight
+			relatedBy: NSLayoutRelationEqual
+			toItem: self
+			attribute: NSLayoutAttributeHeight
+			multiplier: 1.0
+			constant: 0.f];
+		[self addConstraint: constraint];
+		_emptyHeightConstraint = constraint;
+	}
+
+	// Failed constraints.
 	if (_failedTopConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedView
 			attribute: NSLayoutAttributeTop
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -206,7 +283,7 @@
 	
 	if (_failedLeftConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedView
 			attribute: NSLayoutAttributeLeft
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -219,7 +296,7 @@
 	
 	if (_failedWidthConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedView
 			attribute: NSLayoutAttributeWidth
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -232,7 +309,7 @@
 	
 	if (_failedHeightConstraint == nil)
 	{
-		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedImageView
+		NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem: _failedView
 			attribute: NSLayoutAttributeHeight
 			relatedBy: NSLayoutRelationEqual
 			toItem: self
@@ -299,18 +376,25 @@
 	[super updateConstraints];
 }
 
+
+#pragma mark - Private Methods
+
 - (void)_initializeImageView
 {
 	// Set the default content mode.
 	self.contentMode = UIViewContentModeScaleAspectFill;
-	self.failedImageContentMode = UIViewContentModeScaleAspectFill;
 	
-	// Initialize the placeholder image view.
-	_failedImageView = UIImageView.new;
-	_failedImageView.translatesAutoresizingMaskIntoConstraints = NO;
-	_failedImageView.backgroundColor = [UIColor clearColor];
-	_failedImageView.contentMode = self.failedImageContentMode;
-	[self addSubview: _failedImageView];
+	// Initialize the empty view.
+	_emptyView = UIView.new;
+	_emptyView.translatesAutoresizingMaskIntoConstraints = NO;
+	_emptyView.backgroundColor = [UIColor clearColor];
+	[self addSubview: _emptyView];
+	
+	// Initialize the failed view.
+	_failedView = UIView.new;
+	_failedView.translatesAutoresizingMaskIntoConstraints = NO;
+	_failedView.backgroundColor = [UIColor clearColor];
+	[self addSubview: _failedView];
 	
 	// Initialize the image view.
 	_imageView = UIImageView.new;
@@ -321,6 +405,10 @@
 	
 	// Set that the constraints need an update.
 	[self setNeedsUpdateConstraints];
+	
+	// Initially set the empty state.
+	[self setState: AFImageViewStateEmpty
+		animated: NO];
 }
 
 - (UIImage *)_transformImage: (UIImage *)image
@@ -343,38 +431,6 @@
 	{
 		[_imageOperation cancel];
 		_imageOperation = nil;
-	}
-}
-
-- (void)setState: (AFImageViewState)state
-	animated: (BOOL)animated
-{
-	CGFloat failedImageViewAlpha = state == AFImageViewStateImageFailed
-		? 1.f
-		: 0.f;
-	CGFloat imageViewAlpha = state == AFImageViewStateImageLoaded
-		? 1.f
-		: 0.f;
-	
-	if (animated)
-	{
-		// Animate the state change.
-		[UIView animateWithDuration: 0.2
-			delay: 0
-			options: UIViewAnimationOptionAllowUserInteraction
-				| UIViewAnimationOptionCurveEaseOut
-			animations: ^
-			{
-				_failedImageView.alpha = failedImageViewAlpha;
-				_imageView.alpha = imageViewAlpha;
-			}
-			completion: nil];
-	}
-	else
-	{
-		// Apply the state change directly.
-		_failedImageView.alpha = failedImageViewAlpha;
-		_imageView.alpha = imageViewAlpha;
 	}
 }
 
