@@ -57,9 +57,6 @@ typedef AFImageCacheOperation *(^AFImageCacheOperationCreateBlock)(NSURL *url, A
 + (NSURL *)diskCacheURLForURL: (NSURL *)url
 	transform: (AFImageTransform *)transform;
 
-+ (BOOL)urlExistsInDiskCache: (NSURL *)url
-	transform: (AFImageTransform *)transform;
-
 + (BOOL)writeDataToDiskCache: (NSPurgeableData *)data
 	url: (NSURL *)url
 	overwrite: (BOOL)overwrite
